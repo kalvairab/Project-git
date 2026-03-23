@@ -1,58 +1,57 @@
-name: Yaksh AI Final Intelligence Build
-
-on:
-  workflow_dispatch:
+name: YAKSH MASTER COMMANDER
+on: [push, workflow_dispatch]
 
 jobs:
-  build:
+  yaksh_build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: 1. Setup Linux & AI Engines
+      - name: System Setup
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip libffi-dev libssl-dev
-          pip install --user --upgrade buildozer cython==0.29.33 requests beautifulsoup4
+          sudo apt-get install -y libtool autoconf automake m4 build-essential libltdl-dev libtool-bin python3-pip
+          pip install --user --upgrade buildozer cython==0.29.33
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
-      - name: 2. Injecting Yaksh Brain (main.py)
+      - name: Real-Time Yaksh Brain Injection
         run: |
           cat <<EOF > main.py
           from kivy.app import App
           from kivy.uix.button import Button
-          import requests
+          from kivy.uix.label import Label
+          from kivy.uix.boxlayout import BoxLayout
 
-          class YakshAI(App):
+          class YakshApp(App):
               def build(self):
-                  return Button(text="YAKSH AI: SYSTEM ACTIVE\nClick to Sync with Linux Kernel", 
-                                on_press=self.start_ai)
+                  layout = BoxLayout(orientation='vertical')
+                  self.lbl = Label(text="YAKSH AI: ONLINE\nMain aapka Mitra hoon.")
+                  btn = Button(text="Mujhse Baat Karein", size_hint=(1, 0.2))
+                  btn.bind(on_press=self.talk)
+                  layout.add_widget(self.lbl)
+                  layout.add_widget(btn)
+                  return layout
 
-              def start_ai(self, instance):
-                  # Yeh line AI ko actual intelligence degi
-                  print("Connecting to Yaksh Neural Network...")
-                  instance.text = "Yaksh: Main aapka Mitra hoon. Kaise madad karun?"
+              def talk(self, instance):
+                  # Yahan hum asli AI logic connect karenge
+                  self.lbl.text = "Yaksh: Namaste Master! Main aapke system ko\nevolve kar raha hoon."
 
           if __name__ == "__main__":
-              YakshAI().run()
+              YakshApp().run()
           EOF
 
-      - name: 3. Smart Buildozer Configuration
+      - name: Force Build Process
         run: |
           buildozer init
-          # AI requirements ko spec file mein force include karna
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,beautifulsoup4,openssl/g' buildozer.spec
+          # AI ke liye zaroori permissions aur requirements
+          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,certifi/g' buildozer.spec
           sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,RECORD_AUDIO/g' buildozer.spec
-          # Build target fix
-          sed -i 's/#p4a.branch = master/p4a.branch = develop/g' buildozer.spec
-
-      - name: 4. Generating Official APK (The Real Process)
-        run: |
-          # 'yes' command license ko auto-accept karega
-          yes | buildozer android debug || echo "Yaksh: Build process fix ho raha hai..."
-
-      - name: 5. Download your Intelligent APK
+          # Licenses auto-accept karna taaki build na ruke
+          yes | buildozer android debug
+          
+      - name: Upload Final APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Yaksh-Official-AI
+          name: Yaksh-AI-Final-Package
           path: bin/*.apk
