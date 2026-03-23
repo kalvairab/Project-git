@@ -1,57 +1,21 @@
-name: YAKSH MASTER COMMANDER
-on: [push, workflow_dispatch]
+# 1. System ko up-to-date karna
+sudo apt-get update && sudo apt-get upgrade -y
 
-jobs:
-  yaksh_build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+# 2. Engine ke liye Core Linux Dev Tools download karna
+sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev \
+                       libtool autoconf automake libncurses5-dev \
+                       linux-headers-$(uname -r)
 
-      - name: System Setup
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libtool autoconf automake m4 build-essential libltdl-dev libtool-bin python3-pip
-          pip install --user --upgrade buildozer cython==0.29.33
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
+# 3. Model ke liye Mathematical Source Code (OpenBLAS) download karna
+git clone https://github.com/xianyi/OpenBLAS.git --depth 1
 
-      - name: Real-Time Yaksh Brain Injection
-        run: |
-          cat <<EOF > main.py
-          from kivy.app import App
-          from kivy.uix.button import Button
-          from kivy.uix.label import Label
-          from kivy.uix.boxlayout import BoxLayout
+# 4. Neural Logic ke liye Eigen Library (Header-only) download karna
+wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+tar -xf eigen-3.4.0.tar.gz
 
-          class YakshApp(App):
-              def build(self):
-                  layout = BoxLayout(orientation='vertical')
-                  self.lbl = Label(text="YAKSH AI: ONLINE\nMain aapka Mitra hoon.")
-                  btn = Button(text="Mujhse Baat Karein", size_hint=(1, 0.2))
-                  btn.bind(on_press=self.talk)
-                  layout.add_widget(self.lbl)
-                  layout.add_widget(btn)
-                  return layout
+# 5. Yaksh Engine ki base directory banana
+mkdir -p yaksh_engine/model_source
+mv OpenBLAS yaksh_engine/
+mv eigen-3.4.0 yaksh_engine/model_source/
 
-              def talk(self, instance):
-                  # Yahan hum asli AI logic connect karenge
-                  self.lbl.text = "Yaksh: Namaste Master! Main aapke system ko\nevolve kar raha hoon."
-
-          if __name__ == "__main__":
-              YakshApp().run()
-          EOF
-
-      - name: Force Build Process
-        run: |
-          buildozer init
-          # AI ke liye zaroori permissions aur requirements
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy,requests,certifi/g' buildozer.spec
-          sed -i 's/#android.permissions = INTERNET/android.permissions = INTERNET,RECORD_AUDIO/g' buildozer.spec
-          # Licenses auto-accept karna taaki build na ruke
-          yes | buildozer android debug
-          
-      - name: Upload Final APK
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Yaksh-AI-Final-Package
-          path: bin/*.apk
+echo "Yaksh: Saare Linux Source Codes aur Engine components download ho gaye hain."
