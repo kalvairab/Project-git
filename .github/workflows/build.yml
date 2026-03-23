@@ -1,21 +1,39 @@
-# 1. System ko up-to-date karna
-sudo apt-get update && sudo apt-get upgrade -y
+import os
+import subprocess
 
-# 2. Engine ke liye Core Linux Dev Tools download karna
-sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev \
-                       libtool autoconf automake libncurses5-dev \
-                       linux-headers-$(uname -r)
+def download_yaksh_sources():
+    print("--- YAKSH HYBRID ENGINE: DOWNLOADING LINUX SOURCES ---")
+    
+    # 1. Folder structure banana
+    base_dir = "yaksh_engine"
+    folders = ["core_engine", "ai_model_source", "kernel_headers", "network_bridge"]
+    for folder in folders:
+        os.makedirs(f"{base_dir}/{folder}", exist_ok=True)
 
-# 3. Model ke liye Mathematical Source Code (OpenBLAS) download karna
-git clone https://github.com/xianyi/OpenBLAS.git --depth 1
+    # 2. Linux Kernel Headers (For hardware interaction)
+    print("Fetching Linux Kernel Headers...")
+    os.system(f"git clone --depth 1 https://github.com/torvalds/linux.git {base_dir}/kernel_headers")
 
-# 4. Neural Logic ke liye Eigen Library (Header-only) download karna
-wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
-tar -xf eigen-3.4.0.tar.gz
+    # 3. Neural Engine Source (Eigen - for Math calculations)
+    print("Fetching Neural Math Engine...")
+    os.system(f"git clone --depth 1 https://gitlab.com/libeigen/eigen.git {base_dir}/ai_model_source/math_lib")
 
-# 5. Yaksh Engine ki base directory banana
-mkdir -p yaksh_engine/model_source
-mv OpenBLAS yaksh_engine/
-mv eigen-3.4.0 yaksh_engine/model_source/
+    # 4. Network & Security (For Gemini/GitHub Bridge)
+    print("Fetching Security & Network Bridge...")
+    os.system(f"git clone --depth 1 https://github.com/openssl/openssl.git {base_dir}/network_bridge/openssl")
 
-echo "Yaksh: Saare Linux Source Codes aur Engine components download ho gaye hain."
+    # 5. Core Engine (Main C++ Logic)
+    with open(f"{base_dir}/core_engine/main_engine.cpp", "w") as f:
+        f.write("""
+#include <iostream>
+#include <linux/kernel.h>
+int main() {
+    std::cout << "Yaksh Hybrid Engine v0.2: Linux Core Loaded" << std::endl;
+    return 0;
+}
+        """)
+
+    print("\n[SUCCESS] Saare Linux Source Codes 'yaksh_engine' folder mein download ho gaye hain.")
+
+if __name__ == "__main__":
+    download_yaksh_sources()
