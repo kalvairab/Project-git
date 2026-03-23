@@ -1,39 +1,49 @@
 import os
 import subprocess
 
-def download_yaksh_sources:
-    print("--- YAKSH HYBRID ENGINE: DOWNLOADING LINUX SOURCES ---")
-    
-    # 1. Folder structure banana
+def run_command(command, description):
+    """Terminal command chalane aur error handle karne ke liye"""
+    print(f"Yaksh: {description}...")
+    try:
+        subprocess.run(command, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {description} fail ho gaya. {e}")
+
+def setup_yaksh_engine():
+    # 1. Directory Structure Create Karna
     base_dir = "yaksh_engine"
-    folders = ["core_engine", "ai_model_source", "kernel_headers", "network_bridge"]
-    for folder in folders:
-        os.makedirs(f"{base_dir}/{folder}", exist_ok=True)
+    sub_dirs = ["kernel_bridge", "neural_source", "network_layer"]
+    
+    print("--- YAKSH HYBRID ENGINE: INITIALIZING DOWNLOAD ---")
+    
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+    
+    for folder in sub_dirs:
+        path = os.path.join(base_dir, folder)
+        if not os.path.exists(path):
+            os.makedirs(path)
 
-    # 2. Linux Kernel Headers (For hardware interaction)
-    print("Fetching Linux Kernel Headers...")
-    os.system(f"git clone --depth 1 https://github.com/torvalds/linux.git {base_dir}/kernel_headers")
+    # 2. Linux Kernel Headers (Low-level interaction ke liye)
+    kernel_url = "https://github.com/torvalds/linux.git"
+    run_command(f"git clone --depth 1 {kernel_url} {base_dir}/kernel_bridge/linux", "Linux Kernel Sources Download")
 
-    # 3. Neural Engine Source (Eigen - for Math calculations)
-    print("Fetching Neural Math Engine...")
-    os.system(f"git clone --depth 1 https://gitlab.com/libeigen/eigen.git {base_dir}/ai_model_source/math_lib")
+    # 3. Neural Math Engine (Eigen Source)
+    eigen_url = "https://gitlab.com/libeigen/eigen.git"
+    run_command(f"git clone --depth 1 {eigen_url} {base_dir}/neural_source/eigen", "Neural Math Engine Download")
 
-    # 4. Network & Security (For Gemini/GitHub Bridge)
-    print("Fetching Security & Network Bridge...")
-    os.system(f"git clone --depth 1 https://github.com/openssl/openssl.git {base_dir}/network_bridge/openssl")
-
-    # 5. Core Engine (Main C++ Logic)
-    with open(f"{base_dir}/core_engine/main_engine.cpp", "w") as f:
-        f.write("""
+    # 4. Hybrid AI Bridge (C++ File Creation)
+    cpp_content = """
 #include <iostream>
-#include <linux/kernel.h>
 int main() {
-    std::cout << "Yaksh Hybrid Engine v0.2: Linux Core Loaded" << std::endl;
+    std::cout << "Yaksh Hybrid Engine v0.2: System Online" << std::endl;
     return 0;
 }
-        """)
-
-    print("\n[SUCCESS] Saare Linux Source Codes 'yaksh_engine' folder mein download ho gaye hain.")
+"""
+    with open(os.path.join(base_dir, "engine_main.cpp"), "w") as f:
+        f.write(cpp_content.strip())
+    
+    print("\n--- [SUCCESS] Saare Linux Source Codes 'yaksh_engine' mein save ho gaye hain ---")
 
 if __name__ == "__main__":
-    download_yaksh_sources()
+    setup_yaksh_engine()
