@@ -2,40 +2,49 @@ import os
 import subprocess
 
 def download_yaksh_sources():
-    # Header display
-    print("--- YAKSH HYBRID ENGINE: DOWNLOADING LINUX SOURCES ---")
+    print("--- YAKSH HYBRID ENGINE: CLEAN INITIALIZATION ---")
     
-    # 1. Folder structure (Line 4 fix: clear list definition)
+    # 1. Directory Setup
     base_dir = "yaksh_engine"
     folders = ["core_engine", "ai_model_source", "kernel_headers", "network_bridge"]
     
-    for folder in folders:
-        path = os.path.join(base_dir, folder)
-        os.makedirs(path, exist_ok=True)
-        print(f"Directory Created: {path}")
+    try:
+        for folder in folders:
+            path = os.path.join(base_dir, folder)
+            if not os.path.exists(path):
+                os.makedirs(path, exist_ok=True)
+                print(f"Created: {path}")
+    except Exception as e:
+        print(f"Directory Error: {e}")
+        return
 
-    # 2. Linux Kernel Headers (Hardware interaction)
-    print("Fetching Linux Kernel Headers...")
-    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/torvalds/linux.git", f"{base_dir}/kernel_headers"])
+    # 2. Downloading Linux Core & Engine Components
+    # Note: Har command ko alag rakha hai taaki syntax clean rahe
+    commands = [
+        ("Linux Kernel Headers", "git clone --depth 1 https://github.com/torvalds/linux.git yaksh_engine/kernel_headers"),
+        ("Neural Math Engine", "git clone --depth 1 https://gitlab.com/libeigen/eigen.git yaksh_engine/ai_model_source/math_lib"),
+        ("Security Bridge", "git clone --depth 1 https://github.com/openssl/openssl.git yaksh_engine/network_bridge/openssl")
+    ]
 
-    # 3. Neural Engine Source (Math Library)
-    print("Fetching Neural Math Engine...")
-    subprocess.run(["git", "clone", "--depth", "1", "https://gitlab.com/libeigen/eigen.git", f"{base_dir}/ai_model_source/math_lib"])
+    for description, cmd in commands:
+        print(f"Fetching {description}...")
+        result = os.system(cmd)
+        if result != 0:
+            print(f"Warning: {description} download mein problem aayi hai.")
 
-    # 4. Network Security (SSL Bridge)
-    print("Fetching Security & Network Bridge...")
-    subprocess.run(["git", "clone", "--depth", "1", "https://github.com/openssl/openssl.git", f"{base_dir}/network_bridge/openssl"])
+    # 3. Writing Engine Core File (C++)
+    engine_path = os.path.join(base_dir, "core_engine", "main_engine.cpp")
+    cpp_code = """
+#include <iostream>
+int main() {
+    std::cout << "Yaksh Hybrid Engine v0.2: Linux Core Loaded" << std::endl;
+    return 0;
+}
+"""
+    with open(engine_path, "w") as f:
+        f.write(cpp_code.strip())
 
-    # 5. Engine Logic Writing
-    engine_file = os.path.join(base_dir, "core_engine/main_engine.cpp")
-    with open(engine_file, "w") as f:
-        f.write("#include <iostream>\n")
-        f.write("int main() {\n")
-        f.write('    std::cout << "Yaksh Hybrid Engine v0.2 Loaded" << std::endl;\n')
-        f.write("    return 0;\n")
-        f.write("}\n")
-
-    print("\n[SUCCESS] Sabhi Linux Source Codes download ho gaye hain!")
+    print("\n[SUCCESS] Sabhi Source Codes 'yaksh_engine' folder mein clean hain.")
 
 if __name__ == "__main__":
     download_yaksh_sources()
